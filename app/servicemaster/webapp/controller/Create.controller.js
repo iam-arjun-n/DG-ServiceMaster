@@ -1115,13 +1115,17 @@ sap.ui.define(
                 },
 
                 getChangeExtendServiceRequestObject: function (oView, oData) {
+                    let requestType = oView.getModel("serviceModel").getProperty("/RequestType");
                     var productItems = oData.results || [];
                     var serviceCollection = [];
 
                     productItems.forEach(function (item) {
                         var objService = this.getServiceObject();
-
-                        objService.ServiceType = item.SRVTYPE || "";
+                        if (requestType !== "Change") {
+                            objService.ServiceType = "";
+                        } else {
+                            objService.ServiceType = item.SRVTYPE;
+                        }
                         objService.ServiceCategory = item.SERVICECATEGORY || "";
                         objService.Division = item.DIVISION || "";
                         objService.ServiceGroup = item.MATERIALGROUP || "";

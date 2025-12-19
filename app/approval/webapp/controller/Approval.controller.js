@@ -42,11 +42,11 @@ sap.ui.define([
                 return;
             }
             let Existingcomments = [];
-            this.requestType = oContextModel.getProperty("/Type");
+            this.getOwnerComponent().requestType = oContextModel.getProperty("/Type");
             Existingcomments = oContextModel.getProperty("/Comment");
             this.getOwnerComponent().setModel(new JSONModel(Existingcomments), "commentModel");
             this.getView().setModel(new JSONModel(Existingcomments), "commentModel");
-            this.getOwnerComponent().selectedReqID = requestId;
+            this.getOwnerComponent().selectedrequestId = requestId;
 
             var oMainServiceModel = this.getOwnerComponent().getModel("mainServiceModel");
             if (!oMainServiceModel) {
