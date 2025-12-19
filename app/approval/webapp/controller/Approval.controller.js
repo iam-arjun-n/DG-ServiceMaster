@@ -41,8 +41,11 @@ sap.ui.define([
             if (!requestId) {
                 return;
             }
-
+            let Existingcomments = [];
             this.requestType = oContextModel.getProperty("/Type");
+            Existingcomments = oContextModel.getProperty("/Comment");
+            this.getOwnerComponent().setModel(new JSONModel(Existingcomments), "commentModel");
+            this.getView().setModel(new JSONModel(Existingcomments), "commentModel");
             this.getOwnerComponent().selectedReqID = requestId;
 
             var oMainServiceModel = this.getOwnerComponent().getModel("mainServiceModel");
@@ -51,14 +54,13 @@ sap.ui.define([
             }
 
             this.getView().setModel(oMainServiceModel);
-
+            this.getOwnerComponent().busyDialog.open();
             oMainServiceModel.read("/ServiceMasterRequests('" + requestId + "')", {
                 urlParameters: {
                     "$expand": "serviceMasterItems,serviceMasterItems/ServiceDescriptions"
                 },
                 success: function (oData) {
                     console.log("Read success", oData);
-
                     if (oData && oData.serviceMasterItems && oData.serviceMasterItems.results) {
                         var oLocalModel = new sap.ui.model.json.JSONModel({
                             ServiceCollection: oData.serviceMasterItems.results
@@ -66,9 +68,59 @@ sap.ui.define([
 
                         this.getOwnerComponent().setModel(oLocalModel, "serviceModel");
                     }
-                }.bind(this)
+                    this.getOwnerComponent().busyDialog.close();
+                }.bind(this),
+                error: function (oError) {
+                    console.error("Read failed", oError);
+                    this.getOwnerComponent().busyDialog.close();               
+                }
             });
         },
+        getUserInfo: function () {
+            const url = this.getOwnerComponent().getBaseURL() + "/user-api/attributes";
+            var oModel = new JSONModel();
+            var mock = {
+                firstname: "Dummy",
+                lastname: "User",
+                email: "dummy.user@com",
+                name: "dummy.user@com",
+                displayName: "Dummy User (dummy.user@com)"
+            };
+
+            oModel.loadData(url);
+            oModel.dataLoaded()
+                .then(() => {
+                    if (!oModel.getData().email) {
+                        oModel.setData(mock);
+                    }
+
+                    this.getView().setModel(oModel, "userInfo");
+                    this.getOwnerComponent().currentUser = oModel.getData().email;
+
+
+                })
+                .catch(() => {
+                    this.getView().setModel(oModel, "userInfo");
+                });
+        },
+        onCommentPost: function (oEvent) {
+            var oFormat = DateFormat.getDateTimeInstance({ style: "medium" });
+            var oComments = this.getView().getModel("commentModel");
+            var oDate = new Date();
+            var sDate = oFormat.format(oDate);
+            // create new entry
+            var sValue = oEvent.getParameter("value");
+            var aComments = oComments.getData();
+            var oEntry = {
+                UserName: this.getOwnerComponent().currentUser,
+                Date: "" + sDate,
+                Text: sValue,
+                IsNew: true
+            };
+            aComments.unshift(oEntry);
+            oComments.setData(aComments);
+        },
+
 
         onSelectionChange: function (oEvent) {
             let blEnabled = false;
@@ -147,7 +199,7 @@ sap.ui.define([
             let dialogTitle = viewType + " Service Details";
 
             // Checks Service item selected for view type - View, Edit
-            var oSelectedItem = this.byId("srvTable").getSelectedItem();
+            var oSelectedItem = this.byId("tablelist").getSelectedItem();
             if (viewType === "View" || viewType === "Edit") {
                 if (oSelectedItem) {
                     var oBindingContext = oSelectedItem.getBindingContext("serviceModel");
@@ -208,7 +260,6 @@ sap.ui.define([
             this.byId("inptformula").setEditable(blEditable);
             this.byId("inptGraphic").setEditable(blEditable);
             this.byId("inptauth").setEditable(blEditable);
-            this.byId("inpttaxind").setEditable(blEditable);
             this.byId("srvtype").setEditable(blEditable);
             this.byId("srvcat").setEditable(blEditable);
             this.byId("ssc").setEditable(blEditable);
@@ -224,6 +275,11 @@ sap.ui.define([
             this.byId("inptsub").setEditable(blEditable);
             this.byId("inptcost").setEditable(blEditable);
             this.byId("In4").setEditable(blEditable);
+            this.byId("inptDivision").setEditable(blEditable);
+            this.byId("inptValclass").setEditable(blEditable);
+            this.byId("inpttaxind").setEditable(blEditable);
+            this.byId("inptWagetype").setEditable(blEditable);
+            this.byId("inpttaxtrafin").setEditable(blEditable);
 
 
         },

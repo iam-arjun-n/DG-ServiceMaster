@@ -25,11 +25,11 @@
 
                     <Label id="lblactnum" text="Activity Number" labelFor="srvDescripitonLanguage" />
                     <Input id="srvDescripitonLanguage" editable="false"  maxLength="18"
-                        value="{ServiceRequestModel>/ServiceDescriptions/0/ActivityNumber}">
+                        value="{ServiceRequestModel>/ServiceDescriptions/results/0/ActivityNumber}">
                     </Input>
                     <Label id="lblServiceDescription" text="Service Description" labelFor="srvdesc" />
                     <Input id="srvdesc" required="true"
-                        value="{ServiceRequestModel>/ServiceDescriptions/0/Description}"
+                        value="{ServiceRequestModel>/ServiceDescriptions/results/0/Description}"
                         maxLength="40" liveChange="onValueChange"
                         app:i18nFieldKey="lbl_srvdesc">
                     </Input>
@@ -425,7 +425,7 @@
                 <ToolbarSpacer />
 
                 <!-- <Button id="bduplcheck" text="Duplicate Check" press="OriginalDuplicateCheck" type="Emphasized" /> -->
-                <Button id="bSubVal" text="Validate &amp; Submit" press="submitsrv" type="Emphasized" />
+                <Button id="bSubVal" text="Validate &amp; Submit" press="submitsrv" visible="false" type="Emphasized" />
                 <Button id="bCancel" text="Cancel" press="cancelService" />
             </OverflowToolbar>
         </footer>

@@ -1,7 +1,15 @@
 sap.ui.define([
     "sap/ui/core/UIComponent",
-    "com/mdg/deloitte/approval/model/models"
-], (UIComponent, models) => {
+    "sap/ui/Device",
+    "com/mdg/deloitte/approval/model/models",
+    "sap/m/MessageBox",
+    "sap/ui/core/Fragment",
+    "sap/ui/export/Spreadsheet",
+    "sap/ui/model/json/JSONModel",
+    "sap/ui/model/FilterType",
+    "sap/ui/model/FilterOperator",
+    "sap/ui/model/Filter"
+], function (UIComponent, Device, models, MessageBox, Fragment, Spreadsheet, JSONModel, FilterType, FilterOperator, Filter) {
     "use strict";
 
     return UIComponent.extend("com.mdg.deloitte.approval.Component", {
@@ -30,7 +38,6 @@ sap.ui.define([
                 // Set Busy Dialog
                 this.busyDialog = new sap.m.BusyDialog();
                 this.busyDialog.open();
-
                 await this.setTaskModels();
 
                 this._oBundle = this.getModel("i18n").getResourceBundle();
@@ -148,7 +155,7 @@ sap.ui.define([
                 }
             },
             checkTask: function () {
-                if (this.getModel("task").getProperty("/TaskDefinitionName") == "Approval screen") {
+                if (this.getModel("task").getProperty("/TaskDefinitionName") == "Approval") {
                     this.confirmUpdation();
                 } else {
 
@@ -175,12 +182,12 @@ sap.ui.define([
             },
             postFinalData2MasterInitial: function () {
                 that.getModel("context")
-                if (that.getModel("context").getData().startEvent.Type == "Create")
+                if (that.getModel("context").getData().Type == "Create")
                     return that.postFinalData2Master(that);
-                else if (that.getModel("context").getProperty("/startEvent/Type") == "Change")
+                else if (that.getModel("context").getProperty("Type") == "Change")
                     return that.postFinalData2MasterChange(that);
-                else if (that.getModel("context").getProperty("/startEvent/Type") == "Extend")
-                    return that.postFinalData2MasterExtend(that);
+                // else if (that.getModel("context").getProperty("Type") == "Extend")
+                //     return that.postFinalData2MasterExtend(that);
 
             },
             PayloadDataTest: function () {
@@ -387,5 +394,11 @@ sap.ui.define([
                     }
                 });
             },
+        getBaseURL: function () {
+            var appId = this.getManifestEntry("/sap.app/id");
+            var appPath = appId.replace(/\./g, "/");
+            var appModulePath = sap.ui.require.toUrl(appPath);
+            return appModulePath;
+        },
         });
     });
