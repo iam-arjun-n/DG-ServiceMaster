@@ -1,0 +1,159 @@
+_schema-version: 3.3.0
+ID: MDG-ServiceMaster
+description: A simple CAP project.
+version: 1.0.0
+modules:
+- name: MDG-ServiceMaster-srv
+  type: nodejs
+  path: gen/srv
+  requires:
+  - name: MDG-ServiceMaster-auth
+  - name: MDG-ServiceMaster-db
+  provides:
+  - name: srv-api
+    properties:
+      srv-url: ${default-url}
+  parameters:
+    buildpack: nodejs_buildpack
+    memory: 400M
+  build-parameters:
+    builder: npm-ci
+- name: MDG-ServiceMaster-db-deployer
+  type: hdb
+  path: gen/db
+  requires:
+  - name: MDG-ServiceMaster-db
+  parameters:
+    buildpack: nodejs_buildpack
+- name: MDG-ServiceMaster-destination-content
+  type: com.sap.application.content
+  requires:
+  - name: MDG-ServiceMaster-destination-service
+    parameters:
+      content-target: true
+  - name: MDG-ServiceMaster_html_repo_host
+    parameters:
+      service-key:
+        name: MDG-ServiceMaster_html_repo_host-key
+  - name: MDG-ServiceMaster-auth
+    parameters:
+      service-key:
+        name: MDG-ServiceMaster-auth-key
+  parameters:
+    content:
+      instance:
+        destinations:
+        - Name: MDG_ServiceMaster_MDG_ServiceMaster_html_repo_host
+          ServiceInstanceName: MDG-ServiceMaster-html5-app-host-service
+          ServiceKeyName: MDG-ServiceMaster_html_repo_host-key
+          sap.cloud.service: MDGServiceMaster
+        - Authentication: OAuth2UserTokenExchange
+          Name: MDG_ServiceMaster_MDG_ServiceMaster_auth
+          ServiceInstanceName: MDG-ServiceMaster-auth
+          ServiceKeyName: MDG-ServiceMaster-auth-key
+          sap.cloud.service: MDGServiceMaster
+        existing_destinations_policy: ignore
+  build-parameters:
+    no-source: true
+- name: MDG-ServiceMaster-app-content
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: MDG-ServiceMaster_html_repo_host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - commdgdeloitteservicemaster.zip
+      name: commdgdeloitteservicemaster
+      target-path: resources/
+    - artifacts:
+      - commdgdeloitteapproval.zip
+      name: commdgdeloitteapproval
+      target-path: resources/
+- name: commdgdeloitteservicemaster
+  type: html5
+  path: app/servicemaster
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+- name: commdgdeloitteapproval
+  type: html5
+  path: app/approval
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+- name: servicemasterworkflow
+  type: com.sap.application.content
+  path: servicemasterworkflow
+  requires:
+  - name: sap_processautomation
+    parameters:
+      content-target: true
+      service-key:
+        config:
+          deployUsageScenario: workflow
+        name: spa-workflow-service-key
+resources:
+- name: MDG-ServiceMaster-auth
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      tenant-mode: dedicated
+      xsappname: mdg-servicemaster
+    path: ./xs-security.json
+    service: xsuaa
+    service-plan: application
+- name: MDG-ServiceMaster-db
+  type: com.sap.xs.hdi-container
+  parameters:
+    service: hana
+    service-plan: hdi-shared
+- name: MDG-ServiceMaster-destination-service
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: true
+      init_data:
+        instance:
+          destinations:
+          - Authentication: NoAuthentication
+            Name: ui5
+            ProxyType: Internet
+            Type: HTTP
+            URL: https://ui5.sap.com
+          existing_destinations_policy: update
+      version: 1.0.0
+    service: destination
+    service-name: MDG-ServiceMaster-destination-service
+    service-plan: lite
+- name: MDG-ServiceMaster_html_repo_host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-name: MDG-ServiceMaster-html5-app-host-service
+    service-plan: app-host
+- name: sap_processautomation
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: process-automation-service
+    service-plan: standard
+parameters:
+  deploy_mode: html5-repo
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+  - builder: custom
+    commands:
+    - npm ci
+    - npx cds build --production

@@ -1,0 +1,434 @@
+<core:FragmentDefinition xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:u="sap.ui.unified"
+    xmlns:m="sap.uxap"
+    xmlns:upload="sap.m.upload"
+    xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1">
+
+    <Dialog id="dAddService" resizable="false" draggable="false" contentHeight="100%" contentWidth="100%">
+        <content>
+
+            <f:SimpleForm id="generaltabform" editable="true" layout="ResponsiveGridLayout"
+                labelSpanXL="4" labelSpanL="4" labelSpanM="12" labelSpanS="12"
+                adjustLabelSpan="false" emptySpanXL="0" emptySpanL="0"
+                emptySpanM="0" emptySpanS="0" columnsXL="2" columnsL="2"
+                columnsM="1" singleContainerFullSize="false">
+
+                <f:content>
+
+                    <!--Basic Data-->
+                    <core:Title id="ttl" text="General Data" />
+
+                  
+
+                    <Label id="lblactnum" text="Activity Number" labelFor="srvDescripitonLanguage" />
+                    <Input id="srvDescripitonLanguage" editable="false"  maxLength="18"
+                        value="{ServiceRequestModel>/ServiceDescriptions/0/ActivityNumber}">
+                    </Input>
+                    <Label id="lblServiceDescription" text="Service Description" labelFor="srvdesc" />
+                    <Input id="srvdesc" required="true"
+                        value="{ServiceRequestModel>/ServiceDescriptions/0/Description}"
+                        maxLength="40" liveChange="onValueChange"
+                        app:i18nFieldKey="lbl_srvdesc">
+                    </Input>
+                    <Label id="lblServiceCat" text="{i18n>lbl_srvcat}" labelFor="srvcat" />
+                    <Input id="srvcat" required="true" showSuggestion="true" showValueHelp="true"
+                        textFormatMode="ValueKey" name="Service Category" maxLength="4"
+                        app:i18nFieldKey="lbl_srvcat"
+                        value="{ServiceRequestModel>/ServiceCategory}"
+                        valueHelpRequest="onValueHelpRequestServiceCategory"
+                        suggest="handleSuggest"
+                        suggestionItems="{ServiceRequestModel>/ServiceTypeSuggestionItems}"
+                        suggestionItemSelected="handleSuggestionItemSelected"
+                        change="valueChange">
+
+                        <suggestionItems>
+                            <core:ListItem text="{ServiceRequestModel>ProductTypeName}"
+                                key="{ServiceRequestModel>ProductType}"
+                                additionalText="{ServiceRequestModel>ProductType}" />
+                        </suggestionItems>
+                    </Input>
+
+                    <Label text="Long Description" labelFor="idLongDesc"/>
+                    <TextArea id="idLongDesc" value="{ServiceRequestModel>/LongText}"  width="100%" />
+
+                    <Label id="lblBaseUnitOfMeasure" text="{i18n>lbl_uom}" labelFor="uom" />
+                    <Input id="uom" required="true" showSuggestion="true" showValueHelp="true"
+                        textFormatMode="ValueKey" name="Base Unit of Measure"
+                        app:i18nFieldKey="lbl_uom"
+                        maxLength="3"
+                        value="{ServiceRequestModel>/BaseUnitOfMeasure}"
+                        valueHelpRequest="onValueHelpRequestUOM"
+                        suggest="handleSuggest"
+                        suggestionItems="{ServiceRequestModel>/BaseUnitOfMeasureSuggestionItems}"
+                        suggestionItemSelected="handleSuggestionItemSelected"
+                        change="valueChange">
+                        <layoutData>
+                            <l:GridData span="XL8 L8 M12 S12" />
+                        </layoutData>
+                        <suggestionItems>
+                            <core:ListItem text="{ServiceRequestModel>UnitOfMeasureLongName}"
+                                key="{ServiceRequestModel>UnitOfMeasure}"
+                                additionalText="{ServiceRequestModel>UnitOfMeasure}" />
+                        </suggestionItems>
+                    </Input>
+                    <Label />
+                    <CheckBox id="idshort" select="{ServiceRequestModel>/ShortTextAllowed}" text="Short Text Change Allowed"/>
+                     <Label />
+                    <CheckBox id="iddel" select="{ServiceRequestModel>/DeletionIndicator}" visible="false" text="Deletion Indicator"/>
+
+                    <core:Title id="ttl1" text="Basic Data" />
+
+                    <Label id="lblServiceGroup" text="{i18n>lbl_srvgrp}" labelFor="srvgrp" />
+                    <Input id="srvgrp" maxLength="9" required="true" showSuggestion="true" showValueHelp="true"
+                        textFormatMode="ValueKey" name="Service Group"
+                        app:i18nFieldKey="lbl_srvgrp"
+                        value="{ServiceRequestModel>/ServiceGroup}"
+                        valueHelpRequest="onValueHelpRequestMatGrp"
+                        suggest="handleSuggest"
+                        suggestionItems="{ServiceRequestModel>/ServiceGroupSuggestionItems}"
+                        suggestionItemSelected="handleSuggestionItemSelected"
+                        change="valueChange">
+                        <suggestionItems>
+                            <core:ListItem text="{ServiceRequestModel>ProductGroupName}"
+                                key="{ServiceRequestModel>ProductGroup}"
+                                additionalText="{ServiceRequestModel>ProductGroup}" />
+                        </suggestionItems>
+                    </Input>
+
+                    <Label id="lblDivision" text="{i18n>lbl_division}" labelFor="inptDivision"/>
+                    <Input id="inptDivision"  showSuggestion="true" showValueHelp="true" maxLength="2"
+                        textFormatMode="ValueKey" name="Division"
+                        app:i18nFieldKey="lbl_division"
+                        value="{ServiceRequestModel>/Division}"
+                        valueHelpRequest="onValueHelpRequestDivision"
+                        suggest="handleSuggest"
+                        suggestionItems="{ServiceRequestModel>/DivisionSuggestionItems}"
+                        suggestionItemSelected="handleSuggestionItemSelected"
+                        change="valueChange">
+                        <suggestionItems>
+                            <core:ListItem text="{ServiceRequestModel>Division_Text}"
+                                key="{ServiceRequestModel>Division}"
+                                additionalText="{ServiceRequestModel>Division}" />
+                        </suggestionItems>
+                    </Input>
+                       <Label id="lblVALCLASS" text="{i18n>lbl_valclass}" labelFor="inptValclass"/>
+                    <Input id="inptValclass" required="true" showSuggestion="true" showValueHelp="true" maxLength="4"
+                        textFormatMode="ValueKey" name="Valuation Class"
+                        app:i18nFieldKey="lbl_valclass"
+                        value="{ServiceRequestModel>/ValuationClass}"
+                        valueHelpRequest="onValueHelpRequestValClass"
+                        suggest="handleSuggest"
+                        suggestionItems="{ServiceRequestModel>/ValuationClassSuggestionItems}"
+                        suggestionItemSelected="handleSuggestionItemSelected"
+                        change="valueChange">
+                        <suggestionItems>
+                            <core:ListItem text="{ServiceRequestModel>Division_Text}"
+                                key="{ServiceRequestModel>Division}"
+                                additionalText="{ServiceRequestModel>Division}" />
+                        </suggestionItems>
+                    </Input>
+                     <Label id="lblformula" text="{i18n>lbl_formula}" labelFor="inptformula" />
+                    <Input id="inptformula" maxLength="10" value="{ServiceRequestModel>/Formula}"
+                        change="onValueChange" name="Formula"
+                        app:i18nFieldKey="lbl_formula" showValueHelp="true" valueHelpRequest="onValueHelpRequestFormula"/>
+                         <Label id="lblGraphic" text="{i18n>lbl_graphic}" labelFor="inptGraphic" />
+                    <Input id="inptGraphic" value="{ServiceRequestModel>/Graphic}"
+                        change="onValueChange" name="Graphic"  showValueHelp="true" valueHelpRequest="onValueHelpRequestGraphic"
+                        app:i18nFieldKey="lbl_graphic" maxLength="18" />
+                         <Label id="lbltax" text="{i18n>lbl_taxtraiffcode}" labelFor="inpttaxtrafin" />
+                        <Input id="inpttaxtrafin" showSuggestion="true" showValueHelp="true"
+                        textFormatMode="ValueKey" name="Tax Traiff Code" maxLength="16"
+                        app:i18nFieldKey="lbl_taxtraiffcode"
+                        value="{ServiceRequestModel>/TaxTraiffCode}"
+                        valueHelpRequest="onValueHelpRequestTaxTraiffCode"
+                        suggest="handleSuggest"
+                        suggestionItems="{ServiceRequestModel>/ValuationClassSuggestionItems}"
+                        suggestionItemSelected="handleSuggestionItemSelected"
+                        change="valueChange">
+                        <suggestionItems>
+                            <core:ListItem text="{ServiceRequestModel>Division_Text}"
+                                key="{ServiceRequestModel>Division}"
+                                additionalText="{ServiceRequestModel>Division}" />
+                        </suggestionItems>
+                    </Input>
+                    <Label id="lblauth" text="{i18n>lbl_authgrp}" labelFor="inptauth" />
+                     <Input id="inptauth" showSuggestion="true"
+                        textFormatMode="ValueKey" name="Authorization Group" maxLength="4"
+                        app:i18nFieldKey="lbl_authgrp"
+                        value="{ServiceRequestModel>/AuthorizationGroup}"
+                        valueHelpRequest=".handleValueHelpRequest"
+                        suggest="handleSuggest"
+                        suggestionItems="{ServiceRequestModel>/AuthorizationGroupSuggestionItems}"
+                        suggestionItemSelected="handleSuggestionItemSelected"
+                        change="valueChange">
+                        <suggestionItems>
+                            <core:ListItem text="{ServiceRequestModel>Division_Text}"
+                                key="{ServiceRequestModel>Division}"
+                                additionalText="{ServiceRequestModel>Division}" />
+                        </suggestionItems>
+                    </Input>
+                      <Label id="lbltaxind" text="{i18n>lbl_taxind}" labelFor="inpttaxind" />
+                    <Input id="inpttaxind" value="{ServiceRequestModel>/TaxIndicator}" maxLength="1"
+                        change="onValueChange" name="TaxIndicator"  showValueHelp="true" valueHelpRequest="onValueHelpRequestTaxIndicator"
+                        app:i18nFieldKey="lbl_taxind"  />
+
+ <core:Title id="ttl2" text="Standard Service Category" />
+  <Label id="lblServiceType" text="{i18n>lbl_srvtype}" labelFor="srvtype" />
+                    <Input id="srvtype" required="true" showSuggestion="true" showValueHelp="true"
+                        textFormatMode="ValueKey" name="Service Type" maxLength="3"
+                        app:i18nFieldKey="lbl_srvtype"
+                        value="{ServiceRequestModel>/ServiceType}"
+                        valueHelpRequest="onValueHelpRequestServiceType"
+                        suggest="handleSuggest"
+                        suggestionItems="{ServiceRequestModel>/ServiceTypeSuggestionItems}"
+                        suggestionItemSelected="handleSuggestionItemSelected"
+                        change="valueChange">
+
+                        <suggestionItems>
+                            <core:ListItem text="{ServiceRequestModel>ProductTypeName}"
+                                key="{ServiceRequestModel>ProductType}"
+                                additionalText="{ServiceRequestModel>ProductType}" />
+                        </suggestionItems>
+                    </Input>
+                      <Label id="lblSSC" text="{i18n>lbl_sscitem}" labelFor="ssc" />
+                    <Input id="ssc" showSuggestion="true"  maxLength="18"
+                        textFormatMode="ValueKey" name="SSC"
+                        app:i18nFieldKey="lbl_sscitem"
+                        value="{ServiceRequestModel>/SSC}"
+                        valueHelpRequest="onValueHelpRequestSSC"
+                        suggest="handleSuggest"
+                        suggestionItems="{ServiceRequestModel>/ServiceTypeSuggestionItems}"
+                        suggestionItemSelected="handleSuggestionItemSelected"
+                        change="valueChange">
+
+                        <suggestionItems>
+                            <core:ListItem text="{ServiceRequestModel>ProductTypeName}"
+                                key="{ServiceRequestModel>ProductType}"
+                                additionalText="{ServiceRequestModel>ProductType}" />
+                        </suggestionItems>
+                    </Input>
+                       <Label id="lblEdition" text="{i18n>lbl_Edition}" labelFor="inptEdition" />
+                    <Input id="inptEdition"  showSuggestion="true"  maxLength="4"
+                        textFormatMode="ValueKey" name="Edition"
+                        app:i18nFieldKey="lbl_sscitem"
+                        value="{ServiceRequestModel>/Edition}"
+                        valueHelpRequest="onValueHelpRequestEdition"
+                        suggest="handleSuggest"
+                        suggestionItems="{ServiceRequestModel>/ServiceTypeSuggestionItems}"
+                        suggestionItemSelected="handleSuggestionItemSelected"
+                        change="valueChange">
+
+                        <suggestionItems>
+                            <core:ListItem text="{ServiceRequestModel>ProductTypeName}"
+                                key="{ServiceRequestModel>ProductType}"
+                                additionalText="{ServiceRequestModel>ProductType}" />
+                        </suggestionItems>
+                    </Input>
+                     <core:Title id="ttl3" text="Time Management" />
+                        <Label id="lblHierarchyServiceNumber" text="{i18n>lbl_HierarchyServiceNumber}" labelFor="inptHierarchyServiceNumber" />
+                    <Input id="inptHierarchyServiceNumber"  showSuggestion="true" showValueHelp="true"
+                        textFormatMode="ValueKey" name="Hierarchy Service Number" maxLength="18"
+                        app:i18nFieldKey="lbl_HierarchyServiceNumber"
+                        value="{ServiceRequestModel>/HierarchyServiceNumber}"
+                        valueHelpRequest="onValueHelpRequestHierarchyServiceNumber"
+                        suggest="handleSuggest"
+                        suggestionItems="{ServiceRequestModel>/ServiceTypeSuggestionItems}"
+                        suggestionItemSelected="handleSuggestionItemSelected"
+                        change="valueChange">
+
+                        <suggestionItems>
+                            <core:ListItem text="{ServiceRequestModel>ProductTypeName}"
+                                key="{ServiceRequestModel>ProductType}"
+                                additionalText="{ServiceRequestModel>ProductType}" />
+                        </suggestionItems>
+                    </Input>
+                        <Label id="lblWagetype" text="{i18n>lbl_Wagetype}" labelFor="inptWagetype" />
+                    <Input id="inptWagetype"  showSuggestion="true"
+                        textFormatMode="ValueKey" name="Wage type" maxLength="4"
+                        app:i18nFieldKey="lbl_Wagetype"
+                        value="{ServiceRequestModel>/Wagetype}"
+                        valueHelpRequest="onValueHelpRequestWageType"
+                        suggest="handleSuggest"
+                        suggestionItems="{ServiceRequestModel>/ServiceTypeSuggestionItems}"
+                        suggestionItemSelected="handleSuggestionItemSelected"
+                        change="valueChange">
+
+                        <suggestionItems>
+                            <core:ListItem text="{ServiceRequestModel>ProductTypeName}"
+                                key="{ServiceRequestModel>ProductType}"
+                                additionalText="{ServiceRequestModel>ProductType}" />
+                        </suggestionItems>
+                    </Input>
+                     <core:Title id="ttl4" text="Purchasing View" />
+     <Label id="lblpurstatus" text="{i18n>lbl_purstatus}" labelFor="inptpurstatus" />
+                    <Input id="inptpurstatus"  showSuggestion="true" 
+                        textFormatMode="ValueKey" name="Purchasing Status" maxLength="2"
+                        app:i18nFieldKey="lbl_purstatus"
+                        value="{ServiceRequestModel>/PurchasingStatus}"
+                        valueHelpRequest="onValueHelpRequestPurchasingStatus"
+                        suggest="handleSuggest"
+                        suggestionItems="{ServiceRequestModel>/ServiceTypeSuggestionItems}"
+                        suggestionItemSelected="handleSuggestionItemSelected"
+                        change="valueChange">
+
+                        <suggestionItems>
+                            <core:ListItem text="{ServiceRequestModel>ProductTypeName}"
+                                key="{ServiceRequestModel>ProductType}"
+                                additionalText="{ServiceRequestModel>ProductType}" />
+                        </suggestionItems>
+                    </Input>
+                    <Label id="date" text="{i18n>lbl_ValidityDate}" labelFor="inptdate"/>
+                    <DatePicker id="inptdate" value="{ServiceRequestModel>/ValidityDate}"/>
+
+                  <Label id="lblUPC" text="{i18n>lbl_UPC}" labelFor="inptUPC" />
+                    <Input id="inptUPC" value="{ServiceRequestModel>/UPC}"
+                        change="onValueChange" name="UPC"
+                        app:i18nFieldKey="lbl_UPC" maxLength="18" />
+
+                    <Label id="lblEANCategory" text="{i18n>lbl_EANCategory}" labelFor="inptEANCategory"/>
+                    <Input id="inptEANCategory" maxLength="2"
+                        value="{ServiceRequestModel>/EANCategory}" showSuggestion="true" showValueHelp="true"   valueHelpRequest="onValueHelpRequestEANcat" />
+
+                             <core:Title id="ttl5" text="Internal Work" />
+                      <Label id="convertion" text="{i18n>lbl_convertion}" labelFor="In1">
+    <layoutData>
+        <l:GridData span="XL2 L2 M12 S12" />
+    </layoutData>
+</Label>
+
+<!-- In1 -->
+<Input id="In1" maxLength="5" width="100%">
+    <layoutData>
+        <l:GridData span="XL2 L2 M3 S6" />
+    </layoutData>
+</Input>
+
+<!-- In2 (Input with valueHelp + suggestions) -->
+<Input id="In2"
+       value="{ServiceRequestModel>/BaseUnitOfMeasure}"
+       showValueHelp="true"
+       showSuggestion="true"
+       maxLength="3"
+       suggestionItems="{ServiceRequestModel>/BaseUnitOfMeasureSuggestionItems}"
+       suggestionItemSelected="handleSuggestionItemSelected"
+       valueHelpRequest="onValueHelpRequestUOM"
+       liveChange="handleSuggest"
+       editable="false"
+       width="100%">
+    <layoutData>
+        <l:GridData span="XL2 L2 M3 S6" />
+    </layoutData>
+
+    <suggestionItems>
+        <core:ListItem
+            key="{ServiceRequestModel>Key}"
+            text="{ServiceRequestModel>Text}" />
+    </suggestionItems>
+</Input>
+
+<!-- <=> -->
+<Text text="&lt;=&gt;" textAlign="Center" class="sapUiTinyMarginBegin sapUiTinyMarginEnd">
+    <layoutData>
+        <l:GridData span="XL1 L1 M1 S12" />
+    </layoutData>
+</Text>
+
+<!-- In3 -->
+<Input id="In3" maxLength="5" width="100%">
+    <layoutData>
+        <l:GridData span="XL2 L2 M3 S6" />
+    </layoutData>
+</Input>
+
+<!-- In4 (Input with valueHelp + suggestions) -->
+<Input id="In4"
+       value="{ServiceRequestModel>/UnitOfWork}"
+        showValueHelp="true"
+       showSuggestion="true"
+        maxLength="3"
+       suggestionItems="{ServiceRequestModel>/BaseUnitOfMeasureSuggestionItems}"
+       suggestionItemSelected="handleSuggestionItemSelected"
+       valueHelpRequest="onValueHelpRequestUOM"
+       liveChange="handleSuggest"
+       width="100%">
+    <layoutData>
+        <l:GridData span="XL2 L2 M3 S6" />
+    </layoutData>
+
+    <suggestionItems>
+        <core:ListItem
+            key="{ServiceRequestModel>Key}"
+            text="{ServiceRequestModel>Text}" />
+    </suggestionItems>
+</Input>
+    <core:Title id="ttl6" text="Sales/Distribution Data" />
+  <Label id="lblsub" text="{i18n>lbl_sub}" labelFor="inptsub" />
+                    <Input id="inptsub"  showSuggestion="true" 
+                        textFormatMode="ValueKey" name="SubContractor Group"
+                        app:i18nFieldKey="lbl_sub"
+                        value="{ServiceRequestModel>/SubContractorGroup}"
+                        valueHelpRequest="onValueHelpRequestSubContractorGroup"
+                        suggest="handleSuggest"
+                        suggestionItems="{ServiceRequestModel>/ServiceTypeSuggestionItems}"
+                        suggestionItemSelected="handleSuggestionItemSelected"
+                        change="valueChange">
+
+                        <suggestionItems>
+                            <core:ListItem text="{ServiceRequestModel>ProductTypeName}"
+                                key="{ServiceRequestModel>ProductType}"
+                                additionalText="{ServiceRequestModel>ProductType}" />
+                        </suggestionItems>
+                    </Input>
+                      <Label id="lblcost" text="{i18n>lbl_cost}" labelFor="inptcost " />
+                    <Input id="inptcost"  showSuggestion="true" showValueHelp="true"
+                        textFormatMode="ValueKey" name="Costing Model"
+                        app:i18nFieldKey="lbl_cost"
+                        value="{ServiceRequestModel>/CoastingModel}"
+                        valueHelpRequest="onValueHelpRequestCoastingModel"
+                        suggest="handleSuggest"
+                        suggestionItems="{ServiceRequestModel>/ServiceTypeSuggestionItems}"
+                        suggestionItemSelected="handleSuggestionItemSelected"
+                        change="valueChange">
+
+                        <suggestionItems>
+                            <core:ListItem text="{ServiceRequestModel>ProductTypeName}"
+                                key="{ServiceRequestModel>ProductType}"
+                                additionalText="{ServiceRequestModel>ProductType}" />
+                        </suggestionItems>
+                    </Input>
+
+
+                </f:content>
+            </f:SimpleForm>
+
+        </content>
+
+        <footer>
+            <OverflowToolbar>
+                <Button id="bMsgRecEditService" icon="sap-icon://message-popup"
+                    text="{= ${ServiceMessageModel>/messages}.length}" press="handleServiceMessagePopoverPress">
+                    <dependents>
+                        <MessagePopover id="mpServiceMessage" items="{ServiceMessageModel>/messages}">
+                            <MessageItem type="{ServiceMessageModel>type}"
+                                title="{ServiceMessageModel>title}"
+                                activeTitle="{ServiceMessageModel>active}"
+                                description="{ServiceMessageModel>description}"
+                                subtitle="{ServiceMessageModel>subtitle}"
+                                counter="{ServiceMessageModel>counter}" />
+                        </MessagePopover>
+                    </dependents>
+                </Button>
+
+                <ToolbarSpacer />
+
+                <!-- <Button id="bduplcheck" text="Duplicate Check" press="OriginalDuplicateCheck" type="Emphasized" /> -->
+                <Button id="bSubVal" text="Validate &amp; Submit" press="submitsrv" type="Emphasized" />
+                <Button id="bCancel" text="Cancel" press="cancelService" />
+            </OverflowToolbar>
+        </footer>
+    </Dialog>
+
+</core:FragmentDefinition>

@@ -1,0 +1,23 @@
+<core:FragmentDefinition 
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+<SelectDialog
+    id="listDialog"
+    title="Select Service Number"
+    confirm=".onServiceClose"
+    cancel=".onServiceCancel"
+    search="onServiceSearch"
+    liveChange="onServiceSearch"
+    items="{ 
+            path: 'masterServiceModel>/I_TripServiceNumberVH',
+            filters: [
+                { path: 'Language', operator: 'EQ', value1: 'EN' }
+            ]
+        }">
+
+    <StandardListItem
+        title="{masterServiceModel>PoServiceNumber}"
+        description="{masterServiceModel>POServiceDesc}"
+        type="Active" />
+</SelectDialog>
+</core:FragmentDefinition>

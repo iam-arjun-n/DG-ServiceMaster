@@ -1,0 +1,69 @@
+<mvc:View controllerName="com.mdg.deloitte.servicemaster.controller.Create"
+    xmlns:mvc="sap.ui.core.mvc" displayBlock="true"
+    xmlns:smartTable="sap.ui.comp.smarttable"
+    xmlns="sap.m"
+    xmlns:sap.ui.unified="sap.ui.unified">
+    <Page id="Create" title="{i18n>title}" showNavButton="true" navButtonPress="navBack" backgroundDesign="Solid">
+        <content>
+         <Panel headerText="Create Service Master Detail's   {serviceModel>/type}" expandable="true" expanded="true"  width="auto" class="sapUiResponsiveMargin">
+            <Table id="srvTable" inset="false" noDataText="No Data. Use 'Upload' or 'Add new' for adding records" selectionChange="onSelectionChange" alternateRowColors="false" mode="SingleSelectLeft"  items="{serviceModel>/ServiceCollection}">
+                    <headerToolbar>
+                        <OverflowToolbar width="100%">
+                            <content>
+                                <sap.ui.unified:FileUploader xmlns:sap.ui.unified="sap.ui.unified" id="fileUploader" sameFilenameAllowed="true" iconOnly="false" buttonOnly="true" fileType="XLSX,xlsx" icon="sap-icon://upload" iconFirst="true" style="Emphasized" change="uploadFile" visible="true" buttonText="Upload"/>
+                                <Button type="Default" text="Download Template" iconFirst="true" icon="sap-icon://download" press="downloadExcelWorkbook"></Button>
+                                <ToolbarSpacer />
+                                <Button id="btnedit" type="Default" text="Edit" iconFirst="true" icon="sap-icon://edit" enabled="false" press="editObj"></Button>
+                                <Button id="btnadd" type="Default" text="Add New" iconFirst="true" icon="sap-icon://add" press="onAddNew"></Button>
+                                <Button id="btncopy" type="Default" text="Copy from Existing Service" iconFirst="true" icon="sap-icon://copy" press="onCopySrv"></Button>
+                                <Button id="btndele" type="Default" text="Delete" iconFirst="true" icon="sap-icon://delete" enabled="false" press="deleteObj"></Button>
+                                <Button id="btnexp" type="Default" text="Export" iconFirst="true" icon="sap-icon://excel-attachment" press="onExport"></Button>
+                            </content>
+                        </OverflowToolbar>
+                    </headerToolbar>
+                    <columns>
+                        <Column>
+                            <Text text="Service Type" />
+                        </Column>
+                        <Column>
+                            <Text text="Service Description" />
+                        </Column>
+                        <Column>
+                            <Text text="Base Unit Of Measure" />
+                        </Column>
+                        <Column>
+                            <Text text="Service Group" />
+                        </Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem>
+                            <cells>
+                                <Text text="{serviceModel>ServiceType}" />
+                                <Text text="{serviceModel>ServiceDescriptions/0/Description}" />
+                                <Text text="{serviceModel>BaseUnitOfMeasure}" />
+                                <Text text="{serviceModel>ServiceGroup}" />
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </Panel>
+            <!-- Comments Section -->
+            <Panel id="idComments" expanded="true" expandable="true" headerText="Comments" width="auto" class="sapUiResponsiveMargin">
+                <content>
+                    <FeedInput id="fIC" post="onCommentPost" class="sapUiSmallMarginTopBottom" maxLength="100" placeholder="Add a comment - Character length limited to 100" icon="sap-icon://comment" rows="1" />
+                    <Image src="{img>/products/pic1}" width="{/width}" />
+                    <List showSeparators="Inner" items="{commentModel>/}" id="flist">
+                        <FeedListItem id="fliComment" sender="{commentModel>UserName}" timestamp="{commentModel>Date}" text="{commentModel>Text}" />
+                    </List>
+                </content>
+            </Panel>
+        </content>
+        <footer>
+            <OverflowToolbar>
+                <Button id="bMsg" icon="sap-icon://message-popup" press="handleMessagePopoverPress" text="{messageall>/messagesLength}" />
+                <ToolbarSpacer />
+                <Button text="Send for Approval" icon="sap-icon://paper-plane" type="Accept" press="initiateApprovalProcess" />
+            </OverflowToolbar>
+        </footer>
+    </Page>
+</mvc:View>

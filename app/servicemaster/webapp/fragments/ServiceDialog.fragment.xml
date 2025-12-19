@@ -1,0 +1,33 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+
+    <Dialog
+        title="Select Service Number"
+        contentWidth="30rem"
+        draggable="true"
+        resizable="true">
+
+        <List
+            id="serviceList"
+            mode="SingleSelectMaster"
+            items="{serviceVH>/}">
+
+            <StandardListItem
+                title="{serviceVH>PoServiceNumber}"
+                description="{serviceVH>POServiceDesc}" />
+        </List>
+
+        <beginButton>
+            <Button
+                text="OK"
+                press="onServiceConfirm" />
+        </beginButton>
+
+        <endButton>
+            <Button
+                text="Cancel"
+                press="onServiceCancel" />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

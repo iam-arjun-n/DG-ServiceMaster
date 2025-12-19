@@ -1,0 +1,184 @@
+<mvc:View controllerName="com.mdg.deloitte.servicemaster.controller.Overview"
+   xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:m="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:f="sap.f"
+    xmlns:fb="sap.ui.comp.filterbar"
+    xmlns:sfb="sap.ui.comp.smartfilterbar"
+    xmlns:smartTable="sap.ui.comp.smarttable"
+    xmlns:sv="sap.ui.comp.smartvariants"
+    height="100%">
+
+    <f:DynamicPage id="dynamicPageId" headerExpanded="true" backgroundDesign="List">
+        <f:title>
+            <f:DynamicPageTitle id="_IDGenDynamicPageTitle1" backgroundDesign="Transparent">
+                <f:heading>
+                    <Title id="_IDGenTitle1" text="Service Master - Create Requests"/>
+                </f:heading>
+                <f:actions>
+                    <ToolbarSpacer id="_IDGenToolbarSpacer1"/>
+
+                    <Button id="_IDGenMenuButton1" text="Create" press="onCreate"  type="Emphasized"/>
+                    <Button id="_IDGenMenuButton2" text="Change" press="onDisplay"  type="Emphasized"/>
+
+                </f:actions>
+            </f:DynamicPageTitle>
+        </f:title>
+
+        <f:header>
+            <f:DynamicPageHeader id="_IDGenDynamicPageHeader1" pinnable="true" backgroundDesign="Transparent">
+                <f:content>
+                    <fb:FilterBar id="filterbar"
+                        reset="onClear"
+                        clear="onClear"
+                        search="onGo"
+                        showFilterConfiguration="false"
+                        useToolbar="false"
+                        showGoOnFB="true"
+                        showClearOnFB="true">
+
+                        <fb:filterGroupItems>
+
+                            <fb:FilterGroupItem id="FGI1" groupName="g1" name="A" label="Request Id" visibleInFilterBar="true">
+                                <fb:control>
+                                    <MultiInput id="REQ" name="Request Status" valueHelpRequest="REQHelp" valueHelpOnly="true"/>
+                                </fb:control>
+                            </fb:FilterGroupItem>
+
+                            <fb:FilterGroupItem id="FGI2" groupName="g1" name="B" label="Request Type" visibleInFilterBar="true">
+                                <fb:control>
+                                    <Select id="rType" forceSelection="false">
+                                        <items>
+                                            <core:Item key="" text=""/>
+                                            <core:Item key="CR" text="Create"/>
+                                            <core:Item key="CH" text="Change"/> 
+                                            <core:Item key="EX" text="Extend"/>
+                                        </items>
+                                    </Select>
+                                </fb:control>
+                            </fb:FilterGroupItem>
+
+                            <fb:FilterGroupItem id="FGI3" groupName="g1" name="C" label="Workflow Status" visibleInFilterBar="true">
+                                <fb:control>
+                                    <Select id="rStat" forceSelection="false">
+                                        <items>
+                                            <core:Item key="" text="Draft"/>
+                                            <core:Item key="I" text="In Approval"/>
+                                            <core:Item key="C" text="Completed"/>
+                                            <core:Item key="R" text="Rejected"/>
+                                        </items>
+                                    </Select>
+                                </fb:control>
+                            </fb:FilterGroupItem>
+
+                            <fb:FilterGroupItem id="FGI4" groupName="g1" name="D" label="Created By" visibleInFilterBar="true">
+                                <fb:control>
+                                    <MultiInput id="crBy" name="Created By" valueHelpRequest="REQHelpCreatedBy" valueHelpOnly="true" editable="true"/>
+                                </fb:control>
+                            </fb:FilterGroupItem>
+
+                            <fb:FilterGroupItem id="FGI5" groupName="g1" name="E" label="Creation Date" visibleInFilterBar="true">
+                                <fb:control>
+                                    <DateRangeSelection id="crDate"
+                                        value="{
+                                            'type': 'sap.ui.model.type.DateInterval',
+                                            'formatOptions': { 'pattern': 'dd-MM-yyyy' },
+                                            'parts': [
+                                                { 'type': 'sap.ui.model.type.Date', 'path': '/start' },
+                                                { 'type': 'sap.ui.model.type.Date', 'path': '/end' }
+                                            ]
+                                        }"/>
+                                </fb:control>
+                            </fb:FilterGroupItem>
+
+                        </fb:filterGroupItems>
+                    </fb:FilterBar>
+                </f:content>
+            </f:DynamicPageHeader>
+        </f:header>
+
+        <f:content>
+            <Table
+                id="tblRequests"
+                noDataText="No data to display"
+                alternateRowColors="true"
+                includeItemInSelection="true"
+                mode="SingleSelectLeft"
+                updateStarted="upstarted"
+                items="{
+                    path :'mainServiceModel>/ServiceMasterRequests',
+                    sorter:{path:'createdAt', descending:true}
+                }"
+                sticky="HeaderToolbar,ColumnHeaders"
+                selectionChange='.onRequestSelectionChange'
+                growing="true">
+
+                <items>
+                    <ColumnListItem type="Active" highlight="{ path: 'mainServiceModel>workflowStatus', formatter:'.formatter.getColor' }">
+                        <cells>
+
+                            <Link text="{mainServiceModel>requestId}" press="ViewMaterialCodes" ariaHasPopup="Dialog"/>
+                            <Text text="{mainServiceModel>type}" />
+
+                            <ObjectStatus 
+                                text="{ path: 'mainServiceModel>workflowStatus', formatter:'.formatter.reqStatus' }"
+                                state="{ path: 'mainServiceModel>workflowStatus', formatter:'.formatter.getColor' }"
+                                press="viewApproverContact"
+                                active="true"/>
+
+                            <Text text="{ path: 'mainServiceModel>createdAt', formatter:'.formatter.extDate'}"/>
+                            <Text text="{mainServiceModel>createdBy}"/>
+
+                        </cells>
+                    </ColumnListItem>
+                </items>
+
+                <columns>
+                    <Column width="6em">
+                        <header>
+                            <Label text="Request ID"/>
+                        </header>
+                    </Column>
+
+                    <Column width="6em">
+                        <Text text="Request Type"/>
+                    </Column>
+
+                    <Column demandPopin="true" minScreenWidth="Desktop" width="6em">
+                        <header>
+                            <Label text="Workflow Status"/>
+                        </header>
+                    </Column>
+
+                    <Column width="8em">
+                        <header>
+                            <Text text="Created On"/>
+                        </header>
+                    </Column>
+
+                    <Column width="8em">
+                        <header>
+                            <Text text="Created By"/>
+                        </header>
+                    </Column>
+                </columns>
+
+                <headerToolbar>
+                    <OverflowToolbar width="100%">
+                        <content>
+                            <ToolbarSpacer/>
+                            <Button id="idExport" icon="sap-icon://excel-attachment" text="Export" press="onExport"/>
+                            <Button id="btnViewRequest" icon="sap-icon://detail-view" text="View" press=".viewRequest" type="Emphasized" enabled="false"/>
+                            <Label text="Maximum Records" labelFor="maxL" required="true"/>
+                            <Input id="maxL" width="10%" value="50" type="Number" maxLength="5"/>
+                        </content>
+                    </OverflowToolbar>
+                </headerToolbar>
+
+            </Table>
+        </f:content>
+
+    </f:DynamicPage>
+
+</mvc:View>

@@ -1,0 +1,73 @@
+<mvc:View controllerName="com.mdg.deloitte.approval.controller.Approval"
+        xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:l="sap.ui.layout">
+       <App id="app">
+        <pages>
+    <Page id="page" title="{i18n>title}">
+     <content>
+                   <l:HorizontalLayout  id="layout1" />
+
+                    <Panel headerText="Service Master items" expandable="true" expanded="true" width="auto" class="sapUiResponsiveMargin">
+                        <Table id="tablelist" inset="false" 
+                            noDataText="No Data. Use 'Upload' or 'Add new' for adding records" 
+                            selectionChange=".onSelectionChange" 
+                            alternateRowColors="false" 
+                            mode="SingleSelectLeft"  
+                            items="{serviceModel>/ServiceCollection}" >
+                            
+                            <headerToolbar>
+                                <OverflowToolbar width="100%">
+                                    <content>
+                                        <ToolbarSpacer />
+                                     
+                                        <Button id="changeLogBtn" type="Default" text="Change log" iconFirst="true" icon="sap-icon://notes" enabled="false" press="onChangeLogPressed" />
+                                        <Button id="viewbtn" type="Emphasized" text="View" iconFirst="true" icon="sap-icon://detail-view" enabled="false"  press="viewbom" />
+                                          <Button id="editbtn" type="Emphasized" text="Edit" iconFirst="true" icon="sap-icon://detail-view" enabled="false" visible="false" press="editbom" />
+                                    </content>
+                                </OverflowToolbar>
+                            </headerToolbar>
+
+                            <columns>
+                        <Column>
+                            <Text text="Service Type" />
+                        </Column>
+                        <Column>
+                            <Text text="Service Description" />
+                        </Column>
+                        <Column>
+                            <Text text="Base Unit Of Measure" />
+                        </Column>
+                        <Column>
+                            <Text text="Service Group" />
+                        </Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem>
+                            <cells>
+                                <Text text="{serviceModel>ServiceType}" />
+                                <Text text="{serviceModel>ServiceDescriptions/results/0/Description}"  />
+                                <Text text="{serviceModel>BaseUnitOfMeasure}" />
+                                <Text text="{serviceModel>ServiceGroup}" />
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                        </Table>
+                    </Panel>
+
+                    <!-- Comments Section -->
+                    <Panel id="idComments" expanded="true" expandable="true" headerText="Comments" width="auto" class="sapUiResponsiveMargin">
+                        <content>
+                            <FeedInput id="fIC" post=".onCommentPost" class="sapUiSmallMarginTopBottom" maxLength="100" placeholder="Add a comment - Character length limited to 100" icon="sap-icon://comment" rows="1" />
+                            <Image src="{img>/products/pic1}" width="{img>/width}" />
+                            <List showSeparators="Inner" items="{commentModel>/}" id="flist">
+                                <FeedListItem id="fliComment" sender="{commentModel>UserName}" timestamp="{commentModel>Date}" text="{commentModel>Text}" />
+                            </List>
+                        </content>
+                    </Panel>
+
+                </content>
+    </Page>
+          </pages>
+    </App>
+</mvc:View>
