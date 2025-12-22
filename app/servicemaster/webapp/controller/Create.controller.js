@@ -55,7 +55,7 @@ sap.ui.define(
                         }
                     });
                 },
-                onNavBack: function(){
+                onNavBack: function () {
                     this.getOwnerComponent().getRouter().navTo("RouteOverview");
                 },
                 onEntry: function (oEvent) {
@@ -1041,7 +1041,7 @@ sap.ui.define(
                     var oSelectedItem = oEvent.getParameter("selectedItem");
 
                     if (!oSelectedItem) {
-                        return; 
+                        return;
                     }
                     var sServiceNumber = oSelectedItem.getBindingContext("masterServiceModel").getProperty("PoServiceNumber");
 
@@ -1057,7 +1057,7 @@ sap.ui.define(
                         this.CopyPopup.close();
                     }
                 },
-              updateServiceRequestModel: function (sServiceNumber) {
+                updateServiceRequestModel: function (sServiceNumber) {
                     var oView = this.getView();
                     var that = this;
 
@@ -1176,7 +1176,208 @@ sap.ui.define(
                     );
 
                     oServiceModel.refresh(true);
-                }
+                },
+                exportTemplate: function () {
+                    var sUrl = sap.ui.require.toUrl(
+                        "com/mdg/deloitte/servicemaster/template/ServiceMasterTemplate.xlsx"
+                    );
+
+                    window.open(sUrl, "_blank");
+                },
+                uploadFile: function () {
+                    var that = this;
+                    var sText = this._oBundle.getText("unsaved_data");
+
+                    MessageBox.warning(sText, {
+                        title: that._oBundle.getText("confirm_title"),
+                        emphasizedAction: that._oBundle.getText("confirm_yes"),
+                        actions: [
+                            that._oBundle.getText("confirm_yes"),
+                            MessageBox.Action.CANCEL
+                        ],
+                        onClose: function (sAction) {
+                            if (sAction !== that._oBundle.getText("confirm_yes")) {
+                                return;
+                            }
+
+                            var oBusy = that.getOwnerComponent().busyDialog;
+                            oBusy.open();
+
+                            var oUploader = that.getView().byId("fileUploader");
+                            var oFileInput = document.getElementById(oUploader.getId() + "-fu");
+                            var file = oFileInput && oFileInput.files && oFileInput.files[0];
+
+                            if (!file) {
+                                MessageBox.error("Please select a file first.");
+                                return;
+                            }
+
+                            var oReader = new FileReader();
+
+                            oReader.onload = function (oEvent) {
+                                try {
+                                    var data = oEvent.target.result;
+                                    var workbook = XLSX.read(data, { type: "binary" });
+                                    var bValidName = /^ServiceMasterTemplate(?:\s*\(\d+\))?\.xlsx$/i.test(file.name);
+                                    if (!bValidName) {
+                                        throw new Error("Invalid file name");
+                                    }
+
+                                    that.handleUpload(workbook, file.name);
+
+                                } catch (e) {
+                                    MessageBox.error(that._oBundle.getText("file_parse_error"));
+                                } finally {
+                                    oBusy.close();
+                                }
+                            };
+
+                            oReader.onerror = function () {
+                                oBusy.close();
+                                MessageBox.error(that._oBundle.getText("file_read_error"));
+                            };
+
+                            oReader.readAsBinaryString(file);
+                        }
+                    });
+                },
+                handleUpload: async function (workbook) {
+                    var oComponent = this.getOwnerComponent();
+                    var oView = this.getView();
+
+                    try {
+                        var oServiceModel = oView.getModel("serviceModel");
+                        oServiceModel.setSizeLimit(1000);
+
+                        oComponent.busyDialog.open();
+
+                        var excelRows = { basicDataRows: [] };
+
+                        if (!workbook.SheetNames.includes("Basic Data")) {
+                            MessageBox.error("Sheet 'Basic Data' is missing in the uploaded file.");
+                            return;
+                        }
+
+                        var sheetData = XLSX.utils.sheet_to_row_object_array(
+                            workbook.Sheets["Basic Data"]
+                        );
+
+                        if (!sheetData || sheetData.length === 0) {
+                            MessageBox.error("The uploaded file is empty.");
+                            return;
+                        }
+
+                        excelRows.basicDataRows = sheetData;
+
+                        var excelData = this.readDataFromExcel(excelRows, oView);
+
+                        var serviceRequest = oServiceModel.getData();
+                        serviceRequest = this.getBulkUploadServiceRequestObject(
+                            excelData,
+                            serviceRequest
+                        );
+
+                        oServiceModel.setData(serviceRequest);
+
+                       // this.updateModel(oView, serviceRequest, true, oComponent);
+
+                    } catch (e) {
+                        MessageBox.error(e?.message || "Error while processing uploaded file.");
+                    } finally {
+                        oComponent.busyDialog.close();
+                    }
+                },
+
+                readDataFromExcel: function (excelRows) {
+                    sap.ui.core.BusyIndicator.show(0);
+
+                    try {
+                        const getRowItemValue = function (rowItems, key) {
+                            return rowItems?.[key]?.toString().trim() || "";
+                        };
+
+                        let serviceItems = [];
+                        let basicDataRows = excelRows.basicDataRows || [];
+
+                        basicDataRows.forEach((rowItems, index) => {
+                            let recordNo =
+                                getRowItemValue(rowItems, "Record No*") ||
+                                (index + 1).toString();
+
+                            let objService = this.getServiceObject();
+
+                            objService.RecordNo = recordNo;
+
+                            objService.ServiceDescriptions = [{
+                                ActivityNumber: recordNo,
+                                Description: getRowItemValue(rowItems, "Short Description*").toUpperCase()
+                            }];
+
+                            objService.LongText = getRowItemValue(rowItems, "Long Description*");
+                            objService.ServiceCategory = getRowItemValue(rowItems, "Service Category*");
+                            objService.BaseUnitOfMeasure = getRowItemValue(rowItems, "Unit Of Measure*").toUpperCase();
+                            objService.ServiceGroup = getRowItemValue(rowItems, "Service Group*").toUpperCase();
+                            objService.Division = getRowItemValue(rowItems, "Division").toUpperCase();
+                            objService.ValuationClass = getRowItemValue(rowItems, "Valuation Class*");
+                            objService.Formula = getRowItemValue(rowItems, "Formula");
+                            objService.Graphic = getRowItemValue(rowItems, "Graphic");
+                            objService.TaxTraiffCode = getRowItemValue(rowItems, "Tax Traiff Code");
+                            objService.AuthorizationGroup = getRowItemValue(rowItems, "Authorization Group");
+                            objService.TaxIndicator = getRowItemValue(rowItems, "Tax Indicator");
+                            objService.ServiceType = getRowItemValue(rowItems, "Service Type*");
+                            objService.SSC = getRowItemValue(rowItems, "SSC");
+                            objService.Edition = getRowItemValue(rowItems, "Edition");
+                            objService.HierarchyServiceNumber = getRowItemValue(rowItems, "Hierarchy Service Number");
+                            objService.Wagetype = getRowItemValue(rowItems, "Wage type");
+                            objService.PurchasingStatus = getRowItemValue(rowItems, "Purchasing Status");
+
+                            serviceItems.push(objService);
+                        });
+
+                        return { serviceItems };
+
+                    } finally {
+                        sap.ui.core.BusyIndicator.hide();
+                    }
+                },
+
+                getBulkUploadServiceRequestObject: function (excelData, serviceRequest) {
+
+                    let serviceCollection = [];
+
+                    (excelData.serviceItems || []).forEach((serviceData) => {
+
+                        let objService = this.getServiceObject();
+
+                        objService.ServiceType = serviceData.ServiceType;
+                        objService.ServiceCategory = serviceData.ServiceCategory;
+                        objService.Division = serviceData.Division;
+                        objService.BaseUnitOfMeasure = serviceData.BaseUnitOfMeasure;
+                        objService.ServiceGroup = serviceData.ServiceGroup;
+                        objService.ValuationClass = serviceData.ValuationClass;
+                        objService.Formula = serviceData.Formula;
+                        objService.Graphic = serviceData.Graphic;
+                        objService.TaxTraiffCode = serviceData.TaxTraiffCode;
+                        objService.TaxIndicator = serviceData.TaxIndicator;
+                        objService.SSC = serviceData.SSC;
+                        objService.Edition = serviceData.Edition;
+                        objService.HierarchyServiceNumber = serviceData.HierarchyServiceNumber;
+                        objService.Wagetype = serviceData.Wagetype;
+                        objService.PurchasingStatus = serviceData.PurchasingStatus;
+                        objService.LongText = serviceData.LongText;
+
+                        objService.ServiceDescriptions = [{
+                            ActivityNumber: serviceData.RecordNo,
+                            Description: serviceData.ServiceDescriptions?.[0]?.Description || ""
+                        }];
+
+                        serviceCollection.push(objService);
+                    });
+
+                    serviceRequest.ServiceCollection = serviceCollection;
+                    return serviceRequest;
+                },
+
             }
         );
     }

@@ -128,6 +128,11 @@
         {
           "uri": "css/style.css"
         }
+      ],
+      "js": [
+        {
+          "uri": "utils/xlsx.js"
+        }
       ]
     },
     "routing": {
