@@ -169,6 +169,14 @@
           "target": [
             "Create"
           ]
+        },
+        {
+          "name": "View",
+          "pattern": "View/{requestId}",
+          "greedy": true,
+          "target": [
+            "Create"
+          ]
         }
       ],
       "targets": {

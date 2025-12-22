@@ -9,11 +9,11 @@ sap.ui.define([
     "sap/ui/model/json/JSONModel",
     "sap/ui/export/Spreadsheet",
     "com/mdg/deloitte/servicemaster/model/formatter"
-], (Controller, Fragment, FilterOperator, Filter, Token, FilterType, MessageBox, JSONModel, Spreadsheet,formatter) => {
+], (Controller, Fragment, FilterOperator, Filter, Token, FilterType, MessageBox, JSONModel, Spreadsheet, formatter) => {
     "use strict";
 
     return Controller.extend("com.mdg.deloitte.servicemaster.controller.Overview", {
-          formatter: formatter,
+        formatter: formatter,
         onInit: function () {
             let that = this;
             this.oBundle = this.getOwnerComponent().getModel('i18n').getResourceBundle();
@@ -48,15 +48,23 @@ sap.ui.define([
             });
 
         },
-        
+
         navTo: function (view) {
             this.getOwnerComponent().getRouter().navTo(view);
         },
 
         onCreate: function () {
             this.navTo("Create");
-        },  
-        onViewObj: function () {
+        },
+        onRequestSelectionChange: function (oEvent) {
+            var oTable = oEvent.getSource();
+            var oView = this.getView();
+            var aSelectedItems = oTable.getSelectedItems();
+            var oViewBtn = oView.byId("btnViewRequest");
+            oViewBtn.setEnabled(aSelectedItems.length === 1);
+        },
+
+        onviewRequest: function () {
             var oTable = this.getView().byId("tblRequests");
             if (!oTable) {
                 MessageBox.error("Table not found. Please check the ID.");
@@ -75,46 +83,92 @@ sap.ui.define([
                 return;
             }
 
-            var reqId = oContext.getProperty("requestId");
-            if (!reqId) {
+            var requestId = oContext.getProperty("requestId");
+            if (!requestId) {
                 MessageBox.error("Selected record does not contain a valid Request ID.");
                 return;
             }
+          this.getOwnerComponent().getRouter().navTo("View", { requestId: requestId });
+        },
+        ViewServiceNumber: function (oEvent) {
+            var oSource = oEvent.getSource();
+            var oContext = oSource.getBindingContext("mainServiceModel");
 
-            var oModel = this.getView().getModel("mainServiceModel");
-            if (!oModel) {
-                MessageBox.error("Model not found. Please check the model binding.");
+            if (!oContext) {
+                sap.m.MessageBox.error("No request selected");
                 return;
             }
 
-            oModel.read("/ServiceMasterRequests('" + reqId + "')", {
-                // urlParameters: {
-                //     "$expand": "NAV_WORKFLOW_ITEMSET,NAV_WORKFLOW_ITEMSET/NAV_MATERIAL_DATA,NAV_WORKFLOW_ITEMSET/NAV_DOCUMENT_DATA,NAV_WORKFLOW_ITEMSET/NAV_GENERAL_DATA,NAV_WORKFLOW_ITEMSET/NAV_HEADER_DATA,NAV_WORKFLOW_ITEMSET/NAV_BASIC_DATA,NAV_WORKFLOW_ITEMSET/NAV_STATUS_LONG_DATA,NAV_WORKFLOW_COMMENTS"
-                // },
-                success: (oData) => {
+            var sReqId = oContext.getObject().requestId;
+            var oModel = this.getView().getModel("mainServiceModel");
 
-                    if (oData.serviceMasterItems && oData.serviceMasterItems.results) {
-                        var structuredData = {
-                            ServiceCollection: oData.serviceMasterItems.results
-                        };
-                        var oLocalModel = new JSONModel();
-                        oLocalModel.setData(structuredData);
-                        this.getOwnerComponent().setModel(oLocalModel, "serviceModel");
-                        this.getOwnerComponent().getRouter().navTo("Create")
+            sap.ui.core.BusyIndicator.show(0);
 
-                    } else {
-                        MessageBox.error("No workflow items found in the response.");
-                    }
+            oModel.read("/ServiceMasterRequests('" + sReqId + "')", {
+                urlParameters: {
+                    "$expand": "serviceMasterItems,serviceMasterItems/ServiceDescriptions"
                 },
-                error: (oError) => {
-                    MessageBox.error("Error fetching details. Please try again.");
+                success: function (oData) {
+                    sap.ui.core.BusyIndicator.hide();
+
+                    var aServiceNumbers = [];
+                    (oData.serviceMasterItems?.results || []).forEach(function (item) {
+                        (item.ServiceDescriptions?.results || []).forEach(function (desc) {
+                            if (desc.ActivityNumber) {
+                                aServiceNumbers.push({
+                                    ActivityNumber: desc.ActivityNumber,
+                                    Description: desc.Description || ""
+                                });
+                            }
+                        });
+                    });
+
+                    if (!aServiceNumbers.length) {
+                        sap.m.MessageToast.show("No Service Numbers found");
+                        return;
+                    }
+                    this._openServiceNumberPopover(oSource, aServiceNumbers);
+
+                }.bind(this),
+                error: function () {
+                    sap.ui.core.BusyIndicator.hide();
+                    sap.m.MessageBox.error("Failed to fetch Service Numbers");
                 }
-
-
-
-
             });
         },
+        _openServiceNumberPopover: function (oSource, aServiceNumbers) {
+
+            if (!this._oServicePopover) {
+                this._oServicePopover = new sap.m.Popover({
+                    title: "Created Service Number(s)",
+                    placement: sap.m.PlacementType.Auto,
+                    contentWidth: "400px",
+                    resizable: true,
+                    draggable: true,
+                    content: [
+                        new sap.m.List({
+                            items: {
+                                path: "servicePopoverModel>/numbers",
+                                template: new sap.m.StandardListItem({
+                                    title: "{servicePopoverModel>ActivityNumber}",
+                                    description: "{servicePopoverModel>Description}"
+                                })
+                            }
+                        })
+                    ]
+                });
+
+                this.getView().addDependent(this._oServicePopover);
+            }
+            var oPopoverModel = new sap.ui.model.json.JSONModel({
+                numbers: aServiceNumbers
+            });
+
+            this._oServicePopover.setModel(oPopoverModel, "servicePopoverModel");
+            this._oServicePopover.openBy(oSource);
+        },
+
+
         onDisplay: function () {
             const oModel = this.getOwnerComponent().getModel("masterServiceModel");
 
@@ -150,9 +204,9 @@ sap.ui.define([
         onServiceConfirm: function () {
             const oList = sap.ui.getCore().byId("serviceList");
             const oSelectedItem = oList.getSelectedItem();
-            if (!oSelectedItem) { 
-                MessageBox.warning("Please select a Service Number"); 
-                return; 
+            if (!oSelectedItem) {
+                MessageBox.warning("Please select a Service Number");
+                return;
             }
             let sServiceNumber = oSelectedItem.getTitle();
             sServiceNumber = sServiceNumber.replace(/\D/g, "").padStart(18, "0");

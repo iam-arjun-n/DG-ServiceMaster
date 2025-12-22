@@ -13,6 +13,7 @@
                                 <sap.ui.unified:FileUploader xmlns:sap.ui.unified="sap.ui.unified" id="fileUploader" sameFilenameAllowed="true" iconOnly="false" buttonOnly="true" fileType="XLSX,xlsx" icon="sap-icon://upload" iconFirst="true" style="Emphasized" change="uploadFile" visible="true" buttonText="Upload"/>
                                 <Button type="Default" text="Download Template" iconFirst="true" icon="sap-icon://download" press="exportTemplate"></Button>
                                 <ToolbarSpacer />
+                                <Button id="btnView" type="Emphasized" text="View" iconFirst="true" icon="sap-icon://detail-view" enabled="false"  press="viewObj" />
                                 <Button id="btnedit" type="Default" text="Edit" iconFirst="true" icon="sap-icon://edit" enabled="false" press="editObj"></Button>
                                 <Button id="btnadd" type="Default" text="Add New" iconFirst="true" icon="sap-icon://add" press="onAddNew"></Button>
                                 <Button id="btncopy" type="Default" text="Copy from Existing Service" iconFirst="true" icon="sap-icon://copy" press="onCopySrv"></Button>
@@ -62,7 +63,7 @@
             <OverflowToolbar>
                 <Button id="bMsg" icon="sap-icon://message-popup" press="handleMessagePopoverPress" text="{messageall>/messagesLength}" />
                 <ToolbarSpacer />
-                <Button text="Send for Approval" icon="sap-icon://paper-plane" type="Accept" press="initiateApprovalProcess" />
+                <Button id="bSend" text="Send for Approval" icon="sap-icon://paper-plane" type="Accept" press="initiateApprovalProcess" />
             </OverflowToolbar>
         </footer>
     </Page>

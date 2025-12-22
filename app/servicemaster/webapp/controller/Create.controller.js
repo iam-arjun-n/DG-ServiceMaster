@@ -28,6 +28,7 @@ sap.ui.define(
                     var oRouter = this.getOwnerComponent().getRouter();
                     oRouter.getRoute("Create").attachPatternMatched(this.onEntry, this);
                     oRouter.getRoute("Change").attachPatternMatched(this.onEntry, this);
+                    oRouter.getRoute("View").attachPatternMatched(this.onViewEntry, this);
                     // oRouter.getRoute("extendRoute").attachPatternMatched(this.onEntry, this);
                     // oRouter.getRoute("deleteRoute").attachPatternMatched(this.onEntry, this);
                     this.logonLanguage = sap.ui.getCore().getConfiguration().getLanguage().toUpperCase();
@@ -68,6 +69,56 @@ sap.ui.define(
                         this.updateServiceRequestModel(service);
                     }
                 },
+                onViewEntry: function (oEvent) {
+                    let routeName = oEvent.getParameter("name");
+                    let routeArguments = oEvent.getParameter("arguments");
+                    let requestId = routeArguments.requestId;
+                    let oView = this.getView();
+                    let cmpt = this.getOwnerComponent();
+
+                    // Disable Delete and  Modify Button
+                    this.byId("btnedit").setVisible(false);
+                    this.byId("btnadd").setVisible(false);
+                    this.byId("btnView").setVisible(true);
+                    this.byId("bMsg").setVisible(false);
+                    this.byId("bSend").setVisible(false);
+                    this.byId("btncopy").setVisible(false);
+                    this.byId("btnexp").setVisible(false);
+
+                    this.initModels(routeName);
+
+                    var oModel = this.getView().getModel("mainServiceModel");
+                    if (!oModel) {
+                        MessageBox.error("Model not found. Please check the model binding.");
+                        return;
+                    }
+
+                    oModel.read("/ServiceMasterRequests('" + requestId + "')", {
+                        urlParameters: {
+                            "$expand": "serviceMasterItems,serviceMasterItems/ServiceDescriptions"
+                        },
+                        success: (oData) => {
+
+                            if (oData.serviceMasterItems && oData.serviceMasterItems.results) {
+                                var structuredData = {
+                                    ServiceCollection: oData.serviceMasterItems.results
+                                };
+                                var oLocalModel = new JSONModel();
+                                oLocalModel.setData(structuredData);
+                                cmpt.setModel(oLocalModel, "serviceModel");
+
+                            } else {
+                                MessageBox.error("No workflow items found in the response.");
+                            }
+                        },
+                        error: (oError) => {
+                            MessageBox.error("Error fetching details. Please try again.");
+
+
+                        }
+                    });
+                },
+
                 initModels: function (routeName) {
                     // Sets Resource Bundle
                     this._oBundle = this.getView().getModel("i18n").getResourceBundle();
@@ -238,9 +289,14 @@ sap.ui.define(
                     this.displayDialog("Add");
                 },
                 editObj: function (oEvent) {
-                    this._mode = "E"; // Add
+                    this._mode = "E"; // edit
                     this.displayDialog("Edit");
                 },
+                viewObj: function (oEvent) {
+                    this._mode = "V"; // view
+                    this.displayDialog("View");
+                },
+
                 displayDialog: function (viewType) {
                     this.getOwnerComponent().busyDialog.open();
 

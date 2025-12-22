@@ -118,7 +118,7 @@
                     <ColumnListItem type="Active" highlight="{ path: 'mainServiceModel>workflowStatus', formatter:'.formatter.getColor' }">
                         <cells>
 
-                            <Link text="{mainServiceModel>requestId}" press="ViewMaterialCodes" ariaHasPopup="Dialog"/>
+                            <Link text="{mainServiceModel>requestId}" press="ViewServiceNumber" ariaHasPopup="Dialog"/>
                             <Text text="{mainServiceModel>type}" />
 
                             <ObjectStatus 
@@ -169,7 +169,7 @@
                         <content>
                             <ToolbarSpacer/>
                             <Button id="idExport" icon="sap-icon://excel-attachment" text="Export" press="onExport"/>
-                            <Button id="btnViewRequest" icon="sap-icon://detail-view" text="View" press=".viewRequest" type="Emphasized" enabled="false"/>
+                            <Button id="btnViewRequest" icon="sap-icon://detail-view" text="View" press=".onviewRequest" type="Emphasized" enabled="false"/>
                             <Label text="Maximum Records" labelFor="maxL" required="true"/>
                             <Input id="maxL" width="10%" value="50" type="Number" maxLength="5"/>
                         </content>
