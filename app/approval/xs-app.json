@@ -15,6 +15,13 @@
       "csrfProtection": false
     },
     {
+      "source": "^/bpmworkflowruntime/v1/(.*)$",
+      "target": "/public/workflow/rest/v1/$1",
+      "service": "com.sap.spa.processautomation",
+      "endpoint": "api",
+      "authenticationType": "xsuaa"
+    },
+    {
       "source": "^/api/(.*)$",
       "target": "$1",
       "service": "com.sap.spa.processautomation",

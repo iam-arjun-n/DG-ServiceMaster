@@ -7,6 +7,11 @@
         contentWidth="30rem"
         draggable="true"
         resizable="true">
+     <VBox>
+         <SearchField
+                placeholder="Search Service Number or Description"
+                liveChange="onServiceSearch"
+                width="100%" />
 
         <List
             id="serviceList"
@@ -17,6 +22,7 @@
                 title="{serviceVH>PoServiceNumber}"
                 description="{serviceVH>POServiceDesc}" />
         </List>
+        </VBox>
 
         <beginButton>
             <Button

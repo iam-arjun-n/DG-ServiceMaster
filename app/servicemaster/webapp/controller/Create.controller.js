@@ -98,17 +98,14 @@ sap.ui.define(
                             "$expand": "serviceMasterItems,serviceMasterItems/ServiceDescriptions"
                         },
                         success: (oData) => {
-
                             if (oData.serviceMasterItems && oData.serviceMasterItems.results) {
-                                var structuredData = {
-                                    ServiceCollection: oData.serviceMasterItems.results
-                                };
-                                var oLocalModel = new JSONModel();
-                                oLocalModel.setData(structuredData);
-                                cmpt.setModel(oLocalModel, "serviceModel");
-
+                                let structuredData = this.getViewServiceRequestObject(oData);
+                                this.updateModel(
+                                    this.getView(),
+                                    structuredData.ServiceCollection
+                                );
                             } else {
-                                MessageBox.error("No workflow items found in the response.");
+                                MessageBox.error("No service items found in the response.");
                             }
                         },
                         error: (oError) => {
@@ -118,6 +115,56 @@ sap.ui.define(
                         }
                     });
                 },
+                getViewServiceRequestObject: function (serviceRequest) {
+                    let serviceCollection = [];
+
+                    serviceRequest.serviceMasterItems?.results.forEach((serviceItem) => {
+                        let objService = this.getServiceObject();
+
+                        objService.ServiceType = serviceItem.ServiceType;
+                        objService.Division = serviceItem.Division;
+                        objService.ServiceCategory = serviceItem.ServiceCategory;
+
+                        objService.BaseUnitOfMeasure = serviceItem.BaseUnitOfMeasure;
+                        objService.ServiceGroup = serviceItem.ServiceGroup;
+                       
+                        objService.LongText = serviceItem.LongText;
+                        objService.UPC = serviceItem.UPC;
+                        objService.EANCategory = serviceItem.EANCategory;
+                      
+                        objService.ShortTextAllowed = serviceItem.ShortTextAllowed;
+                        objService.ValuationClass = serviceItem.ValuationClass;
+                        objService.TaxIndicator = serviceItem.TaxIndicator;
+                        objService.Formula = serviceItem.Formula;
+                        objService.Graphic = serviceItem.Graphic;
+                        objService.SSC = serviceItem.SSC;
+                        objService.HierarchyServiceNumber = serviceItem.HierarchyServiceNumber;
+                        objService.Wagetype = serviceItem.Wagetype;
+                        objService.PurchasingStatus = serviceItem.PurchasingStatus;
+                        objService.ValidityDate = serviceItem.ValidityDate;
+                        objService.Numberator = serviceItem.Numberator;
+                        objService.Denominator = serviceItem.Denominator;
+                        objService.SubContractorGroup = serviceItem.SubContractorGroup;
+                        objService.CoastingModel = serviceItem.CoastingModel;
+                        objService.UnitOfWork = serviceItem.UnitOfWork;
+                        objService.TaxTraiffCode = serviceItem.TaxTraiffCode;
+                        objService.Edition = serviceItem.Edition;
+
+                        objService.ServiceDescriptions = [];
+                        serviceItem.ServiceDescriptions?.results.forEach((desc) => {
+                            objService.ServiceDescriptions.push({
+                                ActivityNumber: desc.ActivityNumber,
+                                Description: desc.Description
+                            });
+                        });
+
+                        serviceCollection.push(objService);
+                    });
+
+                    serviceRequest.ServiceCollection = serviceCollection;
+                    return serviceRequest;
+                },
+
 
                 initModels: function (routeName) {
                     // Sets Resource Bundle

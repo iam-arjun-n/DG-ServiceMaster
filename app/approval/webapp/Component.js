@@ -412,7 +412,7 @@ sap.ui.define([
         completeTask: function (approvalStatus) {
             var that = this;
             this.getModel("context").setProperty("/approved", approvalStatus);
-            this._patchTaskInstance(approvalStatus === "approve" ? "approve" : "reject")
+            this._patchTaskInstance(approvalStatus)
                 .then(function () {
                     that._refreshTaskList();
                 })
@@ -463,11 +463,7 @@ sap.ui.define([
         },
 
         _refreshTaskList: function () {
-            var oInboxAPI = this.getInboxAPI();
-
-            if (oInboxAPI && oInboxAPI.refreshTaskList) {
-                oInboxAPI.refreshTaskList(); 
-            }
+            this.getInboxAPI().updateTask("NA", this.getTaskInstanceID());
         },
 
         getBaseURL: function () {
