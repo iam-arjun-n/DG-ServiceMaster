@@ -10,7 +10,8 @@
      <VBox>
          <SearchField
                 placeholder="Search Service Number or Description"
-                liveChange="onServiceSearch"
+                liveChange="onSearch"
+                search="onSearch" 
                 width="100%" />
 
         <List

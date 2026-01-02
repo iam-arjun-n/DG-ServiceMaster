@@ -167,8 +167,44 @@ sap.ui.define([
             this._oServicePopover.setModel(oPopoverModel, "servicePopoverModel");
             this._oServicePopover.openBy(oSource);
         },
+        onSearch: function (oEvent) {
+            var sValue =
+                oEvent.getParameter("newValue") ||
+                oEvent.getParameter("query");
+            var oList = sap.ui.core.Fragment.byId(
+                this.getView().getId(),
+                "serviceList"
+            );
 
+            if (!oList) {
+                return;
+            }
 
+            var oBinding = oList.getBinding("items");
+
+            if (!sValue) {
+                oBinding.filter([]);
+                return;
+            }
+
+            var oFilter = new sap.ui.model.Filter({
+                filters: [
+                    new sap.ui.model.Filter(
+                        "PoServiceNumber",
+                        sap.ui.model.FilterOperator.Contains,
+                        sValue
+                    ),
+                    new sap.ui.model.Filter(
+                        "POServiceDesc",
+                        sap.ui.model.FilterOperator.Contains,
+                        sValue
+                    )
+                ],
+                and: false
+            });
+
+            oBinding.filter([oFilter]);
+        },
         onDisplay: function () {
             const oModel = this.getOwnerComponent().getModel("masterServiceModel");
 
@@ -187,6 +223,7 @@ sap.ui.define([
                     this.getView().setModel(oJsonModel, "serviceVH");
                     if (!this._oServiceDialog) {
                         this._oServiceDialog = sap.ui.xmlfragment(
+                            this.getView().getId(),
                             "com.mdg.deloitte.servicemaster.fragments.ServiceDialog",
                             this
                         );
@@ -202,7 +239,7 @@ sap.ui.define([
             });
         },
         onServiceConfirm: function () {
-            const oList = sap.ui.getCore().byId("serviceList");
+            const oList = this.byId("serviceList");
             const oSelectedItem = oList.getSelectedItem();
             if (!oSelectedItem) {
                 MessageBox.warning("Please select a Service Number");
