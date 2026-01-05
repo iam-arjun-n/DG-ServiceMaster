@@ -44,6 +44,8 @@ entity ServiceMasterRequests : managed {
         ApprovedBy         : String;
         serviceMasterItems : Composition of many ServiceMasterItems
                                  on serviceMasterItems.serviceMasterRequest = $self;
+        changeLogs          : Composition of many ChangeLogs
+                                  on changeLogs.serviceMasterRequest = $self;
 }
 
 entity ServiceMasterItems : cuid {
@@ -83,4 +85,15 @@ entity ServiceDescriptions : cuid {
         toBeDeleted        : Boolean;
         isNew              : Boolean;
     key serviceMasterItems : Association to ServiceMasterItems;
+}
+entity ChangeLogs : cuid, managed {
+    service              : String(40);
+    tableName                 : String(50);
+    fieldName                 : String(60);
+    technicalFieldName        : String(60);
+    oldValue                  : String;
+    newValue                  : String;
+    additionalKeys            : String(255);
+
+    key serviceMasterRequest   : Association to ServiceMasterRequests;
 }

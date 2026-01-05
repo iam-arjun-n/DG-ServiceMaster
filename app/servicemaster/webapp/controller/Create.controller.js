@@ -1,3 +1,30 @@
+const CHANGE_FIELDS = [
+    "ServiceType",
+    "ServiceCategory",
+    "BaseUnitOfMeasure",
+    "ServiceGroup",
+    "Division",
+    "LongText",
+    "UPC",
+    "EANCategory",
+    "ShortTextAllowed",
+    "ValuationClass",
+    "TaxIndicator",
+    "Formula",
+    "Graphic",
+    "SSC",
+    "HierarchyServiceNumber",
+    "Wagetype",
+    "PurchasingStatus",
+    "ValidityDate",
+    "Numberator",
+    "Denominator",
+    "SubContractorGroup",
+    "CoastingModel",
+    "UnitOfWork",
+    "TaxTraiffCode",
+    "Edition"
+];
 sap.ui.define(
     [
         "sap/ui/core/mvc/Controller",
@@ -644,76 +671,123 @@ sap.ui.define(
                 },
                 PayloadData: function () {
                     let serviceModel = this.getView().getModel("serviceModel");
-                    let Comments = this.getComments();
                     let requestType = serviceModel.getProperty("/RequestType");
                     let serviceCollection = serviceModel.getProperty("/ServiceCollection");
 
-                    var oData = {};
-                    var arrObj = {};
+                    let oData = {};
+                    let arrObj = {};
 
                     oData.workflowStatus = "In Approval";
                     oData.type = requestType;
                     oData.serviceMasterItems = [];
-                    // oData.CommentData = Comments;
                     oData.requestId = "NEWREQUEST";
+
+                    const convert = (dateStr) => {
+                        if (!dateStr) return null;
+                        const [dd, mm, yyyy] = dateStr.split("-");
+                        return new Date(`${mm}-${dd}-${yyyy}`);
+                    };
+
                     for (let i = 0; i < serviceCollection?.length; i++) {
-                        const convert = (dateStr) => {
-                            if (dateStr == null) return "";
-                            if (dateStr == undefined) return "";
-                            if (dateStr && dateStr != null && JSON.stringify(dateStr) != "null") {
-                                const [dd, mm, yyyy] = dateStr.split("-");
-                                return `${mm}-${dd}-${yyyy}`;
-                            }
-                            return "";
+                        arrObj = {
+                            ServiceType: serviceCollection[i].ServiceType,
+                            ServiceCategory: serviceCollection[i].ServiceCategory,
+                            BaseUnitOfMeasure: serviceCollection[i].BaseUnitOfMeasure,
+                            ServiceGroup: serviceCollection[i].ServiceGroup,
+                            Division: serviceCollection[i].Division,
+                            LongText: serviceCollection[i].LongText,
+                            UPC: serviceCollection[i].UPC,
+                            EANCategory: serviceCollection[i].EANCategory,
+                            ShortTextAllowed: serviceCollection[i].ShortTextAllowed,
+                            ValuationClass: serviceCollection[i].ValuationClass,
+                            TaxIndicator: serviceCollection[i].TaxIndicator,
+                            Formula: serviceCollection[i].Formula,
+                            Graphic: serviceCollection[i].Graphic,
+                            SSC: serviceCollection[i].SSC,
+                            HierarchyServiceNumber: serviceCollection[i].HierarchyServiceNumber,
+                            Wagetype: serviceCollection[i].Wagetype,
+                            PurchasingStatus: serviceCollection[i].PurchasingStatus,
+                            ValidityDate: convert(serviceCollection[i].ValidityDate),
+                            Numberator: serviceCollection[i].Numberator,
+                            Denominator: serviceCollection[i].Denominator,
+                            SubContractorGroup: serviceCollection[i].SubContractorGroup,
+                            CoastingModel: serviceCollection[i].CoastingModel,
+                            UnitOfWork: serviceCollection[i].UnitOfWork,
+                            TaxTraiffCode: serviceCollection[i].TaxTraiffCode,
+                            Edition: serviceCollection[i].Edition,
+                            ServiceDescriptions: []
                         };
-                        arrObj = {};
-                        arrObj.ServiceType = serviceCollection[i].ServiceType;
-                        arrObj.ServiceCategory = serviceCollection[i].ServiceCategory;
-                        arrObj.BaseUnitOfMeasure = serviceCollection[i].BaseUnitOfMeasure;
-                        arrObj.ServiceGroup = serviceCollection[i].ServiceGroup;
-                        arrObj.Division = serviceCollection[i].Division;
-                        arrObj.LongText = serviceCollection[i].LongText;
-                        arrObj.UPC = serviceCollection[i].UPC;
-                        arrObj.EANCategory = serviceCollection[i].EANCategory;
-                        arrObj.ShortTextAllowed = serviceCollection[i].ShortTextAllowed;
-                        arrObj.ValuationClass = serviceCollection[i].ValuationClass;
-                        arrObj.TaxIndicator = serviceCollection[i].TaxIndicator;
-                        arrObj.Formula = serviceCollection[i].Formula;
-                        arrObj.Graphic = serviceCollection[i].Graphic;
-                        arrObj.SSC = serviceCollection[i].SSC;
-                        arrObj.HierarchyServiceNumber = serviceCollection[i].HierarchyServiceNumber;
-                        arrObj.Wagetype = serviceCollection[i].Wagetype;
-                        arrObj.PurchasingStatus = serviceCollection[i].PurchasingStatus;
-                        arrObj.ValidityDate = new Date(convert(serviceCollection[i].ValidityDate));
-                        arrObj.Numberator = serviceCollection[i].Numberator;
-                        arrObj.Denominator = serviceCollection[i].Denominator;
-                        arrObj.SubContractorGroup = serviceCollection[i].SubContractorGroup;
-                        arrObj.CoastingModel = serviceCollection[i].CoastingModel;
-                        arrObj.UnitOfWork = serviceCollection[i].UnitOfWork;
-                        arrObj.TaxTraiffCode = serviceCollection[i].TaxTraiffCode;
-                        arrObj.Edition = serviceCollection[i].Edition;
-
-
-                        arrObj.ServiceDescriptions = [];
 
                         for (let j = 0; j < serviceCollection[i]?.ServiceDescriptions?.length; j++) {
-                            let arrservice_description = {
+                            arrObj.ServiceDescriptions.push({
                                 ActivityNumber: serviceCollection[i].ServiceDescriptions[j].ActivityNumber,
                                 Description: serviceCollection[i].ServiceDescriptions[j].Description
-                                // toBeDeleted: serviceCollection[i].ServiceDescriptions[j].ToBeDeleted,
-                                // isNew: serviceCollection[i].serviceDescriptions[j].IsNew
-                            }
-                            arrObj.ServiceDescriptions.push(arrservice_description);
+                            });
                         }
-                        oData.serviceMasterItems.push(arrObj);
 
+                        oData.serviceMasterItems.push(arrObj);
+                    }
+                    if (requestType === "Change") {
+                        this.createChangeLog(this.ServiceModelData, oData);
                     }
 
-                    // if (requestType === "Change") {
-                    //     this.identifyChanges(that.changeservices, oData, this.ServiceModelData);
-                    // } 
                     console.log(oData);
                     return oData;
+                },
+                createChangeLog: function (oldData, newData) {
+                    let changeLogs = [];
+
+                    newData.serviceMasterItems.forEach((newItem, index) => {
+                        let oldItem = oldData?.serviceMasterItems?.[index];
+                        if (!oldItem) return;
+
+                        CHANGE_FIELDS.forEach(field => {
+                            let oldVal = oldItem[field];
+                            let newVal = newItem[field];
+
+                            if (oldVal instanceof Date && newVal instanceof Date) {
+                                oldVal = oldVal.toISOString().split("T")[0];
+                                newVal = newVal.toISOString().split("T")[0];
+                            }
+
+                            if (oldVal !== newVal) {
+                                changeLogs.push({
+                                    service: oldItem.ServiceType || "",
+                                    tableName: "ServiceMasterItems",
+                                    fieldName: field,
+                                    technicalFieldName: field,
+                                    oldValue: oldVal ?? "",
+                                    newValue: newVal ?? "",
+                                    additionalKeys: `ServiceCategory=${oldItem.ServiceCategory || ""}`
+                                });
+                            }
+                        });
+
+                        this.compareServiceDescriptions(
+                            oldItem.ServiceDescriptions,
+                            newItem.ServiceDescriptions,
+                            changeLogs,
+                            oldItem
+                        );
+                    });
+                    newData.changeLogs = changeLogs;
+                },
+                compareServiceDescriptions: function (oldArr = [], newArr = [], changeLogs, serviceItem) {
+                    newArr.forEach((newDesc, idx) => {
+                        let oldDesc = oldArr[idx];
+
+                        if (!oldDesc || oldDesc.Description !== newDesc.Description) {
+                            changeLogs.push({
+                                service: serviceItem.ServiceType || "",
+                                tableName: "ServiceDescriptions",
+                                fieldName: "Description",
+                                technicalFieldName: "Description",
+                                oldValue: oldDesc?.Description ?? "",
+                                newValue: newDesc.Description ?? "",
+                                additionalKeys: `ActivityNumber=${newDesc.ActivityNumber}`
+                            });
+                        }
+                    });
                 },
                 postData: function () {
                     let that = this;
